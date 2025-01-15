@@ -1,0 +1,95 @@
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[project]
+name = "postgresql-ldap-sync"
+description = "Project to sync LDAP users / groups to PostgreSQL"
+requires-python = ">=3.10"
+license = "Apache-2.0"
+version = "0.1.0"
+authors = [
+    {name = "Sinclert Perez", email = "sinclert.perez@canonical.com"}
+]
+maintainers = [
+    {name = "Carl Csaposs", email = "carl.csaposs@canonical.com"},
+    {name = "Dragomir Penev", email = "dragomir.penev@canonical.com"},
+    {name = "Marcelo Neppel", email = "marcelo.neppel@canonical.com"},
+    {name = "Paulo Silveira", email = "paulo.machado@canonical.com"},
+    {name = "Shayan Patel", email = "shayan.patel@canonical.com"},
+    {name = "Sinclert Perez", email = "sinclert.perez@canonical.com"},
+]
+dependencies = [
+    "psycopg2 >= 2.9.0",
+    "python-ldap >= 3.4.0",
+]
+
+[project.optional-dependencies]
+format = [
+    "ruff ~= 0.9",
+]
+lint = [
+    "codespell ~= 2.3",
+    "ruff ~= 0.9",
+]
+test = [
+    "coverage ~= 7.6",
+    "pytest ~= 8.3",
+]
+
+[project.urls]
+Homepage = "https://github.com/canonical/postgresql-ldap-sync"
+Issues = "https://github.com/canonical/postgresql-ldap-sync/issues"
+Changelog = "https://github.com/canonical/postgresql-ldap-sync/blob/main/CHANGELOG.md"
+
+
+# Testing tools configuration
+[tool.coverage.run]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+
+[tool.pytest.ini_options]
+log_cli_level = "INFO"
+markers = ["unit", "integration"]
+
+# Dependency tools configuration
+[tool.poetry]
+requires-poetry = ">=2.0.0"
+package-mode = true
+packages = [
+    { include = "postgresql_ldap_sync", from = "src" },
+]
+
+# Linting tools configuration
+[tool.ruff]
+preview = true
+target-version = "py310"
+src = ["src", "tests"]
+line-length = 99
+
+[tool.ruff.lint]
+explicit-preview-rules = true
+select = ["A", "E", "W", "F", "C", "N", "D", "I", "CPY001"]
+ignore = [
+    "D100", # Ignore D100 Missing docstring in public module
+    "D104", # Ignore D104 Missing docstring in __init__
+    "E731", # Ignore E731 Do not assign a `lambda` expression
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = [
+    "F401", # Ignore F401 Imported but unused
+    "F403", # Ignore F403 Unable to detect undefined names
+]
+
+[tool.ruff.lint.flake8-copyright]
+author = "Canonical Ltd."
+notice-rgx = "Copyright\\s\\d{4}([-,]\\d{4})*\\s+"
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"

@@ -1,0 +1,108 @@
+# Copyright 2025 Canonical Ltd.
+# See LICENSE file for licensing details.
+name: Tests
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  lint:
+    name: "Lint"
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+      - name: "Install binaries"
+        run: |
+          sudo apt install libldap2-dev
+          sudo apt install libsasl2-dev
+      - name: "Set up Python"
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      - name: "Install poetry & tox"
+        run: |
+          pipx install poetry
+          pipx install tox
+      - name: "Run linters"
+        run: tox run -e lint
+
+  test-unit:
+    name: "Run unit tests"
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+      - name: "Install binaries"
+        run: |
+          sudo apt install libldap2-dev
+          sudo apt install libsasl2-dev
+      - name: "Set up Python"
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      - name: "Install poetry & tox"
+        run: |
+          pipx install poetry
+          pipx install tox
+      - name: "Run tests"
+        run: tox run -e unit
+      - name: "Upload Coverage to Codecov"
+        uses: codecov/codecov-action@v5
+
+  test-integration:
+    name: "Run integration tests"
+    runs-on: ubuntu-latest
+    env:
+      GLAUTH_USERNAME: cn=serviceuser,ou=svcaccts,dc=glauth,dc=com
+      GLAUTH_PASSWORD: dogood
+      POSTGRES_DATABASE: postgres
+      POSTGRES_USERNAME: postgres_ldap_sync
+      POSTGRES_PASSWORD: postgres_ldap_sync
+    services:
+      glauth:
+        image: glauth/glauth:v2.3.2
+        options: --name glauth
+        ports:
+          - 3893:3893
+      postgres:
+        image: postgres:16-alpine
+        options: --name postgres
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_DB: ${{ env.POSTGRES_DATABASE }}
+          POSTGRES_USER: ${{ env.POSTGRES_USERNAME }}
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+      - name: "Copy GLAuth configuration"
+        run: docker cp ${{ github.workspace }}/tests/_configs/glauth.cfg glauth:/app/config/config.cfg
+      - name: "Restart GLAuth container"
+        run: docker restart glauth
+      - name: "Install binaries"
+        run: |
+          sudo apt install libldap2-dev
+          sudo apt install libsasl2-dev
+      - name: "Set up Python"
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      - name: "Install poetry & tox"
+        run: |
+          pipx install poetry
+          pipx install tox
+      - name: "Run tests"
+        run: tox run -e integration
+      - name: "Upload Coverage to Codecov"
+        uses: codecov/codecov-action@v5
