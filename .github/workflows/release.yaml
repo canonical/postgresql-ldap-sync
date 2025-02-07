@@ -9,6 +9,8 @@ jobs:
   build:
     name: "Build package"
     runs-on: ubuntu-latest
+    outputs:
+      VERSION: ${{ steps.export.outputs.VERSION }}
     steps:
       - name: "Checkout"
         uses: actions/checkout@v4
@@ -16,14 +18,15 @@ jobs:
           fetch-depth: 0
       - name: "Install poetry"
         run: pipx install poetry
-      - name: "Export package version"
+      - name: "Export package information"
+        id: export
         run: |
           VERSION=$(poetry version --short)
           if [ "$(git tag -l "${VERSION}")" ]; then
             echo "Tag ${VERSION} already exists. Please bump the project to a greater version."
             exit 1
           fi
-          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "VERSION=$VERSION" >> "$GITHUB_OUTPUT"
       - name: "Build package"
         run: poetry build
       - name: "Store the distribution packages"
@@ -46,10 +49,10 @@ jobs:
           path: dist/
       - name: "Create GitHub release"
         run: |
-          git tag "${{ env.VERSION }}"
-          git push origin "${{ env.VERSION }}"
-          gh release create "${{ env.VERSION }}" --generate-notes --title "${{ env.VERSION }}"
-          gh release upload "${{ env.VERSION }}" dist/*.{tar.gz,whl}
+          git tag "${{ needs.build.outputs.VERSION }}"
+          git push origin "${{ needs.build.outputs.VERSION }}"
+          gh release create "${{ needs.build.outputs.VERSION }}" --generate-notes --title "${{ needs.build.outputs.VERSION }}"
+          gh release upload "${{ needs.build.outputs.VERSION }}" dist/*.{tar.gz,whl}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
