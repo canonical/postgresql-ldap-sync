@@ -9,15 +9,15 @@ requires-python = ">=3.10"
 license = "Apache-2.0"
 version = "0.1.0"
 authors = [
-    {name = "Sinclert Perez", email = "sinclert.perez@canonical.com"}
+    { name = "Sinclert Perez", email = "sinclert.perez@canonical.com" }
 ]
 maintainers = [
-    {name = "Carl Csaposs", email = "carl.csaposs@canonical.com"},
-    {name = "Dragomir Penev", email = "dragomir.penev@canonical.com"},
-    {name = "Marcelo Neppel", email = "marcelo.neppel@canonical.com"},
-    {name = "Paulo Silveira", email = "paulo.machado@canonical.com"},
-    {name = "Shayan Patel", email = "shayan.patel@canonical.com"},
-    {name = "Sinclert Perez", email = "sinclert.perez@canonical.com"},
+    { name = "Carl Csaposs", email = "carl.csaposs@canonical.com" },
+    { name = "Dragomir Penev", email = "dragomir.penev@canonical.com" },
+    { name = "Marcelo Neppel", email = "marcelo.neppel@canonical.com" },
+    { name = "Paulo Silveira", email = "paulo.machado@canonical.com" },
+    { name = "Shayan Patel", email = "shayan.patel@canonical.com" },
+    { name = "Sinclert Perez", email = "sinclert.perez@canonical.com" },
 ]
 dependencies = [
     "psycopg2 >= 2.9.0",
