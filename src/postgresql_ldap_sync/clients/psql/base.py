@@ -31,13 +31,13 @@ class BasePostgreClient(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def grant_group_membership(self, group: str, users: list[str]) -> None:
-        """Grant group membership to a list of users."""
+    def grant_group_memberships(self, groups: list[str], users: list[str]) -> None:
+        """Grant groups membership to a list of users."""
         raise NotImplementedError()
 
     @abstractmethod
-    def revoke_group_membership(self, group: str, users: list[str]) -> None:
-        """Revoke group membership from a list of users."""
+    def revoke_group_memberships(self, groups: list[str], users: list[str]) -> None:
+        """Revoke groups membership from a list of users."""
         raise NotImplementedError()
 
     @abstractmethod

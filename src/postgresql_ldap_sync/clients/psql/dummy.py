@@ -30,12 +30,12 @@ class DummyPostgresClient(BasePostgreClient):
         """Delete a group in PostgreSQL."""
         return None
 
-    def grant_group_membership(self, group: str, users: list[str]) -> None:
-        """Grant group membership to a list of users."""
+    def grant_group_memberships(self, groups: list[str], users: list[str]) -> None:
+        """Grant groups membership to a list of users."""
         return None
 
-    def revoke_group_membership(self, group: str, users: list[str]) -> None:
-        """Revoke group membership from a list of users."""
+    def revoke_group_memberships(self, groups: list[str], users: list[str]) -> None:
+        """Revoke groups membership from a list of users."""
         return None
 
     def search_users(self) -> list[str]:
