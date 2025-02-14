@@ -72,17 +72,28 @@ line-length = 99
 
 [tool.ruff.lint]
 explicit-preview-rules = true
-select = ["A", "E", "W", "F", "C", "N", "D", "I", "CPY001"]
+select = [
+    "A",      # Activate flake8-builtins
+    "C",      # Acticate mccabe
+    "D",      # Activate pydocstyle
+    "E",      # Activate pycodestyle errors
+    "W",      # Activate pycodestyle warnings
+    "F",      # Acticate pyflakes
+    "I",      # Activate isort
+    "N",      # Activate PEP8 naming
+    "S608",   # Acticate flake8-bandit query injection
+    "CPY001", # Activate copyright notice check
+]
 ignore = [
-    "D100", # Ignore D100 Missing docstring in public module
-    "D104", # Ignore D104 Missing docstring in __init__
-    "E731", # Ignore E731 Do not assign a `lambda` expression
+    "D100",   # Ignore D100 Missing docstring in public module
+    "D104",   # Ignore D104 Missing docstring in __init__
+    "E731",   # Ignore E731 Do not assign a `lambda` expression
 ]
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = [
-    "F401", # Ignore F401 Imported but unused
-    "F403", # Ignore F403 Unable to detect undefined names
+    "F401",   # Ignore F401 Imported but unused
+    "F403",   # Ignore F403 Unable to detect undefined names
 ]
 
 [tool.ruff.lint.flake8-copyright]
