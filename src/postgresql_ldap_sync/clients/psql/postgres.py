@@ -69,12 +69,12 @@ class DefaultPostgresClient(BasePostgreClient):
             else:
                 return cursor.fetchall()
 
-    def _create_role(self, role: str, login: bool, inherit: bool) -> None:
+    def _create_role(self, role: str, inherit: bool, login: bool) -> None:
         """Create a role in PostgreSQL."""
         quoted_role = Identifier(role)
         quoted_options = " ".join([
-            "LOGIN" if login else "NOLOGIN",
             "INHERIT" if inherit else "NOINHERIT",
+            "LOGIN" if login else "NOLOGIN",
         ])
 
         query = SQL(f"CREATE ROLE {{role}} WITH {quoted_options}")
@@ -132,17 +132,17 @@ class DefaultPostgresClient(BasePostgreClient):
         """Close the psycopg2 cursor and connection."""
         self._client.close()
 
-    def create_user(self, user: str, login: bool = True, inherit: bool = True) -> None:
+    def create_user(self, user: str, inherit: bool = True) -> None:
         """Create a user in PostgreSQL."""
-        self._create_role(user, login, inherit)
+        self._create_role(user, inherit=inherit, login=True)
 
     def delete_user(self, user: str) -> None:
         """Delete a user in PostgreSQL."""
         self._delete_role(user)
 
-    def create_group(self, group: str, login: bool = False, inherit: bool = False) -> None:
+    def create_group(self, group: str, inherit: bool = False) -> None:
         """Create a group in PostgreSQL."""
-        self._create_role(group, login, inherit)
+        self._create_role(group, inherit=inherit, login=False)
 
     def delete_group(self, group: str) -> None:
         """Delete a group in PostgreSQL."""
@@ -158,48 +158,38 @@ class DefaultPostgresClient(BasePostgreClient):
 
     def search_users(self) -> Iterator[str]:
         """Search for PostgreSQL users."""
-        query = SQL(
-            "SELECT rolname "
-            "FROM pg_catalog.pg_roles "
-            "WHERE rolcanlogin AND oid IN (SELECT member from pg_catalog.pg_auth_members) "
-            "ORDER BY 1"
-        )
+        query = SQL("SELECT usename as name FROM pg_catalog.pg_user ORDER BY 1")
         rows = self._execute_query(query)
 
         for row in rows:
-            user = row["rolname"]
+            user = row["name"]
             if user not in self._SYSTEM_ROLES:
                 yield user
 
     def search_groups(self) -> Iterator[str]:
         """Search for PostgreSQL groups."""
-        query = SQL(
-            "SELECT rolname "
-            "FROM pg_catalog.pg_roles "
-            "WHERE rolcanlogin AND oid NOT IN (SELECT member from pg_catalog.pg_auth_members) "
-            "ORDER BY 1"
-        )
+        query = SQL("SELECT groname as name FROM pg_catalog.pg_group ORDER BY 1")
         rows = self._execute_query(query)
 
         for row in rows:
-            group = row["rolname"]
+            group = row["name"]
             if group not in self._SYSTEM_ROLES:
                 yield group
 
     def search_group_memberships(self) -> Iterator[GroupMembers]:
         """Search for PostgreSQL group memberships."""
         query = SQL(
-            "SELECT roles_2.rolname as group, roles_1.rolname as user "
-            "FROM pg_catalog.pg_roles roles_1 "
-            "JOIN pg_catalog.pg_auth_members memberships ON (memberships.member=roles_1.oid) "
-            "JOIN pg_catalog.pg_roles roles_2 ON (memberships.roleid=roles_2.oid) "
-            "WHERE roles_2.rolcanlogin "
-            "ORDER BY 1"
+            "SELECT pg_group.groname, pg_user.usename "
+            "FROM pg_catalog.pg_user "
+            "JOIN pg_catalog.pg_auth_members ON (pg_auth_members.member=pg_user.usesysid) "
+            "JOIN pg_catalog.pg_group ON (pg_auth_members.roleid=pg_group.grosysid) "
+            "ORDER BY 1, 2"
         )
         rows = self._execute_query(query)
 
-        group_func = lambda row: row["group"]
-        user_func = lambda row: row["user"]
+        group_func = lambda row: row["groname"]
+        user_func = lambda row: row["usename"]
 
         for group, grouped_rows in itertools.groupby(rows, group_func):
-            yield GroupMembers(group=group, users=map(user_func, grouped_rows))
+            if group not in self._SYSTEM_ROLES:
+                yield GroupMembers(group=group, users=map(user_func, grouped_rows))
