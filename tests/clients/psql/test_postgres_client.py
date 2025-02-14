@@ -25,16 +25,16 @@ class TestDefaultPostgresClient:
             auto_commit=False,
         )
 
-        client.create_user("user_1", "LOGIN")
-        client.create_user("user_2", "LOGIN")
-        client.create_user("user_3", "NOLOGIN")
+        client.create_user("user_1", login=True)
+        client.create_user("user_2", login=True)
+        client.create_user("user_3", login=False)
 
-        client.create_group("group_1", "LOGIN")
-        client.create_group("group_2", "LOGIN")
-        client.create_group("group_3", "NOLOGIN")
+        client.create_group("group_1", login=True)
+        client.create_group("group_2", login=True)
+        client.create_group("group_3", login=False)
 
-        client.grant_group_membership("group_1", ["user_1", "user_2"])
-        client.grant_group_membership("group_2", ["user_2", "user_3"])
+        client.grant_group_memberships(["group_1"], ["user_1", "user_2"])
+        client.grant_group_memberships(["group_2"], ["user_2", "user_3"])
 
         yield client
 

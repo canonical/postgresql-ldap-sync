@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog][docs-changelog], and the version adheres to [Semantic Versioning][docs-semver].
 
 
+## Unreleased
+### Added
+- Ability to grant / revoke role membership in bulk.
+### Fixed
+- Possible query injection when PG client used in isolation.
+
 ## [0.1.0][changes-0.1.0] - 2025-02-04
 ### Added
 - Initial functionality.
