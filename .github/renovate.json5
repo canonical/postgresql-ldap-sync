@@ -4,6 +4,7 @@
     'github>canonical/data-platform//renovate_presets/charm.json5',
   ],
   reviewers: [
+    'sinclert-canonical',
     'team:data-platform-postgresql',
   ],
   packageRules: [
