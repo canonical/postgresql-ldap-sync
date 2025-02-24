@@ -6,6 +6,7 @@ The format is based on [Keep a Changelog][docs-changelog], and the version adher
 
 ## Unreleased
 ### Added
+- Ability to search users / groups in a scoped manner.
 ### Fixed
 
 ## [0.2.0][changes-0.2.0] - 2025-02-17
