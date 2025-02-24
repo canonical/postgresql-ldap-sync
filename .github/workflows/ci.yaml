@@ -23,6 +23,7 @@ jobs:
         uses: actions/checkout@v4
       - name: "Install binaries"
         run: |
+          sudo apt update
           sudo apt install libldap2-dev
           sudo apt install libsasl2-dev
       - name: "Set up Python"
@@ -44,6 +45,7 @@ jobs:
         uses: actions/checkout@v4
       - name: "Install binaries"
         run: |
+          sudo apt update
           sudo apt install libldap2-dev
           sudo apt install libsasl2-dev
       - name: "Set up Python"
@@ -92,6 +94,7 @@ jobs:
         run: docker restart glauth
       - name: "Install binaries"
         run: |
+          sudo apt update
           sudo apt install libldap2-dev
           sudo apt install libsasl2-dev
       - name: "Set up Python"
