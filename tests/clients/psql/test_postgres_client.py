@@ -59,23 +59,45 @@ class TestDefaultPostgresClient:
 
         assert "group_rw" in groups
 
-    def test_search_users(self, client: DefaultPostgresClient):
-        """Test the search_users functionality."""
+    def test_search_users_scoped(self, client: DefaultPostgresClient):
+        """Test the search_users functionality from a group."""
+        users = client.search_users(from_group="group_1")
+        users = list(users)
+
+        assert "user_1" in users
+        assert "user_2" in users
+        assert "user_3" not in users
+        assert len(users) == len(set(users))
+
+    def test_search_users_unscoped(self, client: DefaultPostgresClient):
+        """Test the search_users functionality from any group."""
         users = client.search_users()
         users = list(users)
 
         assert "user_1" in users
         assert "user_2" in users
         assert "user_3" in users
+        assert len(users) == len(set(users))
 
-    def test_search_groups(self, client: DefaultPostgresClient):
-        """Test the search_groups functionality."""
+    def test_search_groups_scoped(self, client: DefaultPostgresClient):
+        """Test the search_groups functionality from a user."""
+        groups = client.search_groups(from_user="user_2")
+        groups = list(groups)
+
+        assert "group_1" in groups
+        assert "group_2" in groups
+        assert "group_3" not in groups
+        assert len(groups) == len(set(groups))
+
+    def test_search_groups_unscoped(self, client: DefaultPostgresClient):
+        """Test the search_groups functionality from any user."""
         groups = client.search_groups()
         groups = list(groups)
 
         assert "group_1" in groups
         assert "group_2" in groups
         assert "group_3" in groups
+        assert len(groups) == len(set(groups))
 
     def test_search_group_memberships(self, client: DefaultPostgresClient):
         """Test the search_group_memberships functionality."""
