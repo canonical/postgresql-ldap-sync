@@ -72,8 +72,8 @@ class Synchronizer:
 
         for match in matches:
             if match.should_grant and "GRANT" in actions:
-                self._psql_client.grant_group_membership(match.group_name, [match.user_name])
+                self._psql_client.grant_group_memberships([match.group_name], [match.user_name])
             elif match.should_revoke and "REVOKE" in actions:
-                self._psql_client.revoke_group_membership(match.group_name, [match.user_name])
+                self._psql_client.revoke_group_memberships([match.group_name], [match.user_name])
             elif match.should_keep and "KEEP" in actions:
                 pass

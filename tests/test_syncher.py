@@ -93,8 +93,8 @@ class TestSynchronizer:
     def test_sync_group_memberships(self, synchronizer: Synchronizer):
         """Test the creation / deletion of LDAP memberships into PostgreSQL."""
         with (
-            patch.object(synchronizer._psql_client, "grant_group_membership") as grant_member,
-            patch.object(synchronizer._psql_client, "revoke_group_membership") as revoke_member,
+            patch.object(synchronizer._psql_client, "grant_group_memberships") as grant_member,
+            patch.object(synchronizer._psql_client, "revoke_group_memberships") as revoke_member,
         ):
             synchronizer.sync_group_memberships(actions=["GRANT"])
             grant_member.assert_called()

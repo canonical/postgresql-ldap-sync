@@ -7,17 +7,18 @@ name = "postgresql-ldap-sync"
 description = "Project to sync LDAP users / groups to PostgreSQL"
 requires-python = ">=3.10"
 license = "Apache-2.0"
-version = "0.1.0"
+readme = "README.md"
+version = "0.2.0"
 authors = [
-    {name = "Sinclert Perez", email = "sinclert.perez@canonical.com"}
+    { name = "Sinclert Perez", email = "sinclert.perez@canonical.com" }
 ]
 maintainers = [
-    {name = "Carl Csaposs", email = "carl.csaposs@canonical.com"},
-    {name = "Dragomir Penev", email = "dragomir.penev@canonical.com"},
-    {name = "Marcelo Neppel", email = "marcelo.neppel@canonical.com"},
-    {name = "Paulo Silveira", email = "paulo.machado@canonical.com"},
-    {name = "Shayan Patel", email = "shayan.patel@canonical.com"},
-    {name = "Sinclert Perez", email = "sinclert.perez@canonical.com"},
+    { name = "Carl Csaposs", email = "carl.csaposs@canonical.com" },
+    { name = "Dragomir Penev", email = "dragomir.penev@canonical.com" },
+    { name = "Marcelo Neppel", email = "marcelo.neppel@canonical.com" },
+    { name = "Paulo Silveira", email = "paulo.machado@canonical.com" },
+    { name = "Shayan Patel", email = "shayan.patel@canonical.com" },
+    { name = "Sinclert Perez", email = "sinclert.perez@canonical.com" },
 ]
 dependencies = [
     "psycopg2 >= 2.9.0",
@@ -71,17 +72,28 @@ line-length = 99
 
 [tool.ruff.lint]
 explicit-preview-rules = true
-select = ["A", "E", "W", "F", "C", "N", "D", "I", "CPY001"]
+select = [
+    "A",      # Activate flake8-builtins
+    "C",      # Acticate mccabe
+    "D",      # Activate pydocstyle
+    "E",      # Activate pycodestyle errors
+    "W",      # Activate pycodestyle warnings
+    "F",      # Acticate pyflakes
+    "I",      # Activate isort
+    "N",      # Activate PEP8 naming
+    "S608",   # Acticate flake8-bandit query injection
+    "CPY001", # Activate copyright notice check
+]
 ignore = [
-    "D100", # Ignore D100 Missing docstring in public module
-    "D104", # Ignore D104 Missing docstring in __init__
-    "E731", # Ignore E731 Do not assign a `lambda` expression
+    "D100",   # Ignore D100 Missing docstring in public module
+    "D104",   # Ignore D104 Missing docstring in __init__
+    "E731",   # Ignore E731 Do not assign a `lambda` expression
 ]
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = [
-    "F401", # Ignore F401 Imported but unused
-    "F403", # Ignore F403 Unable to detect undefined names
+    "F401",   # Ignore F401 Imported but unused
+    "F403",   # Ignore F403 Unable to detect undefined names
 ]
 
 [tool.ruff.lint.flake8-copyright]

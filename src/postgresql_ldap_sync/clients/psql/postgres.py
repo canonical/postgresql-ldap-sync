@@ -8,6 +8,7 @@ from typing import Iterator
 import psycopg2
 from psycopg2.errors import DatabaseError, ProgrammingError
 from psycopg2.extras import RealDictCursor, RealDictRow
+from psycopg2.sql import SQL, Composable, Identifier
 
 from ...models import GroupMembers
 from .base import BasePostgreClient
@@ -56,7 +57,7 @@ class DefaultPostgresClient(BasePostgreClient):
             autocommit=auto_commit,
         )
 
-    def _execute_query(self, query: str) -> list[RealDictRow]:
+    def _execute_query(self, query: Composable) -> list[RealDictRow]:
         """Execute a SQL query and return the results."""
         with self._client.cursor(cursor_factory=RealDictCursor) as cursor:
             try:
@@ -68,116 +69,127 @@ class DefaultPostgresClient(BasePostgreClient):
             else:
                 return cursor.fetchall()
 
-    def _create_role(self, role: str, options: str) -> None:
+    def _create_role(self, role: str, inherit: bool, login: bool) -> None:
         """Create a role in PostgreSQL."""
-        query = f"CREATE ROLE {role} {options}"
+        quoted_role = Identifier(role)
+        quoted_options = " ".join([
+            "INHERIT" if inherit else "NOINHERIT",
+            "LOGIN" if login else "NOLOGIN",
+        ])
+
+        query = SQL(f"CREATE ROLE {{role}} WITH {quoted_options}")
+        query = query.format(role=quoted_role)
 
         try:
             self._execute_query(query)
         except ProgrammingError:
-            logger.error(f"Could not create role '{role}'")
+            logger.error(f"Could not create role {quoted_role}")
 
     def _delete_role(self, role: str) -> None:
         """Delete a role in PostgreSQL."""
-        query = f"DROP ROLE {role}"
+        quoted_role = Identifier(role)
+
+        query = SQL("DROP ROLE {role}")
+        query = query.format(role=quoted_role)
 
         try:
             self._execute_query(query)
         except ProgrammingError:
-            logger.error(f"Could not delete role '{role}'")
+            logger.error(f"Could not delete role {quoted_role}")
 
-    def _grant_role_membership(self, role: str, roles: list[str], options: str) -> None:
+    def _grant_role_memberships(self, groups: list[str], users: list[str]) -> None:
         """Grant role membership to a list of roles."""
-        roles = ",".join(roles)
-        query = f"GRANT {role} TO {roles} {options}"
+        quoted_groups = SQL(",").join(Identifier(group) for group in groups)
+        quoted_users = SQL(",").join(Identifier(user) for user in users)
+
+        query = SQL("GRANT {groups} TO {users}")
+        query = query.format(
+            groups=quoted_groups,
+            users=quoted_users,
+        )
 
         try:
             self._execute_query(query)
         except ProgrammingError:
-            logger.error(f"Could not grant memberships to role '{role}'")
+            logger.error(f"Could not grant memberships to groups {quoted_groups}")
 
-    def _revoke_role_membership(self, role: str, roles: list[str]) -> None:
+    def _revoke_role_memberships(self, groups: list[str], users: list[str]) -> None:
         """Revoke role membership from a list of roles."""
-        roles = ",".join(roles)
-        query = f"REVOKE {role} FROM {roles}"
+        quoted_groups = SQL(",").join(Identifier(group) for group in groups)
+        quoted_users = SQL(",").join(Identifier(user) for user in users)
 
+        query = SQL("REVOKE {groups} FROM {users}")
+        query = query.format(
+            groups=quoted_groups,
+            users=quoted_users,
+        )
         try:
             self._execute_query(query)
         except ProgrammingError:
-            logger.error(f"Could not revoke memberships from role '{role}'")
+            logger.error(f"Could not revoke memberships from groups {quoted_groups}")
 
     def close(self) -> None:
         """Close the psycopg2 cursor and connection."""
         self._client.close()
 
-    def create_user(self, user: str, options: str = "LOGIN") -> None:
+    def create_user(self, user: str, inherit: bool = True) -> None:
         """Create a user in PostgreSQL."""
-        self._create_role(user, options)
+        self._create_role(user, inherit=inherit, login=True)
 
     def delete_user(self, user: str) -> None:
         """Delete a user in PostgreSQL."""
         self._delete_role(user)
 
-    def create_group(self, group: str, options: str = "NOLOGIN") -> None:
+    def create_group(self, group: str, inherit: bool = False) -> None:
         """Create a group in PostgreSQL."""
-        self._create_role(group, options)
+        self._create_role(group, inherit=inherit, login=False)
 
     def delete_group(self, group: str) -> None:
         """Delete a group in PostgreSQL."""
         self._delete_role(group)
 
-    def grant_group_membership(self, group: str, users: list[str], options: str = "") -> None:
-        """Grant group membership to a list of users."""
-        self._grant_role_membership(group, users, options)
+    def grant_group_memberships(self, groups: list[str], users: list[str]) -> None:
+        """Grant groups membership to a list of users."""
+        self._grant_role_memberships(groups, users)
 
-    def revoke_group_membership(self, group: str, users: list[str]) -> None:
-        """Revoke group membership from a list of users."""
-        self._revoke_role_membership(group, users)
+    def revoke_group_memberships(self, groups: list[str], users: list[str]) -> None:
+        """Revoke groups membership from a list of users."""
+        self._revoke_role_memberships(groups, users)
 
     def search_users(self) -> Iterator[str]:
         """Search for PostgreSQL users."""
-        query = (
-            "SELECT rolname "
-            "FROM pg_catalog.pg_roles "
-            "WHERE rolcanlogin AND oid IN (SELECT member from pg_catalog.pg_auth_members) "
-            "ORDER BY 1"
-        )
+        query = SQL("SELECT usename as name FROM pg_catalog.pg_user ORDER BY 1")
         rows = self._execute_query(query)
 
         for row in rows:
-            user = row["rolname"]
+            user = row["name"]
             if user not in self._SYSTEM_ROLES:
                 yield user
 
     def search_groups(self) -> Iterator[str]:
         """Search for PostgreSQL groups."""
-        query = (
-            "SELECT rolname "
-            "FROM pg_catalog.pg_roles "
-            "WHERE rolcanlogin AND oid NOT IN (SELECT member from pg_catalog.pg_auth_members) "
-            "ORDER BY 1"
-        )
+        query = SQL("SELECT groname as name FROM pg_catalog.pg_group ORDER BY 1")
         rows = self._execute_query(query)
 
         for row in rows:
-            group = row["rolname"]
+            group = row["name"]
             if group not in self._SYSTEM_ROLES:
                 yield group
 
     def search_group_memberships(self) -> Iterator[GroupMembers]:
         """Search for PostgreSQL group memberships."""
-        query = (
-            "SELECT roles_2.rolname as group, roles_1.rolname as user "
-            "FROM pg_catalog.pg_roles roles_1 "
-            "JOIN pg_catalog.pg_auth_members memberships ON (memberships.member=roles_1.oid) "
-            "JOIN pg_catalog.pg_roles roles_2 ON (memberships.roleid=roles_2.oid) "
-            "WHERE roles_2.rolcanlogin "
-            "ORDER BY 1"
+        query = SQL(
+            "SELECT pg_group.groname, pg_user.usename "
+            "FROM pg_catalog.pg_user "
+            "JOIN pg_catalog.pg_auth_members ON (pg_auth_members.member=pg_user.usesysid) "
+            "JOIN pg_catalog.pg_group ON (pg_auth_members.roleid=pg_group.grosysid) "
+            "ORDER BY 1, 2"
         )
         rows = self._execute_query(query)
 
-        group_func = lambda row: row["group"]
-        user_func = lambda row: row["user"]
+        group_func = lambda row: row["groname"]
+        user_func = lambda row: row["usename"]
 
         for group, grouped_rows in itertools.groupby(rows, group_func):
-            yield GroupMembers(group=group, users=map(user_func, grouped_rows))
+            if group not in self._SYSTEM_ROLES:
+                yield GroupMembers(group=group, users=map(user_func, grouped_rows))
