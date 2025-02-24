@@ -8,7 +8,7 @@ from typing import Iterator
 import psycopg2
 from psycopg2.errors import DatabaseError, ProgrammingError
 from psycopg2.extras import RealDictCursor, RealDictRow
-from psycopg2.sql import SQL, Composable, Identifier
+from psycopg2.sql import SQL, Composable, Identifier, Literal
 
 from ...models import GroupMembers
 from .base import BasePostgreClient
@@ -156,23 +156,55 @@ class DefaultPostgresClient(BasePostgreClient):
         """Revoke groups membership from a list of users."""
         self._revoke_role_memberships(groups, users)
 
-    def search_users(self) -> Iterator[str]:
+    def search_users(self, from_group: str | None = None) -> Iterator[str]:
         """Search for PostgreSQL users."""
-        query = SQL("SELECT usename as name FROM pg_catalog.pg_user ORDER BY 1")
+        if from_group:
+            group_filter = SQL("pg_group.groname LIKE {group}")
+            group_regex = Literal(from_group)
+        else:
+            group_filter = SQL("pg_group.groname LIKE {group} OR pg_group.groname IS NULL")
+            group_regex = Literal("%")
+
+        query = SQL(
+            "SELECT DISTINCT pg_user.usename "
+            "FROM pg_catalog.pg_user "
+            "LEFT JOIN pg_catalog.pg_auth_members ON (pg_auth_members.member=pg_user.usesysid) "
+            "LEFT JOIN pg_catalog.pg_group ON (pg_auth_members.roleid=pg_group.grosysid) "
+            "WHERE {group_filter} "
+            "ORDER BY 1"
+        )
+
+        query = query.format(group_filter=group_filter.format(group=group_regex))
         rows = self._execute_query(query)
 
         for row in rows:
-            user = row["name"]
+            user = row["usename"]
             if user not in self._SYSTEM_ROLES:
                 yield user
 
-    def search_groups(self) -> Iterator[str]:
+    def search_groups(self, from_user: str | None = None) -> Iterator[str]:
         """Search for PostgreSQL groups."""
-        query = SQL("SELECT groname as name FROM pg_catalog.pg_group ORDER BY 1")
+        if from_user:
+            user_filter = SQL("pg_user.usename LIKE {user}")
+            user_regex = Literal(from_user)
+        else:
+            user_filter = SQL("pg_user.usename LIKE {user} OR pg_user.usename IS NULL")
+            user_regex = Literal("%")
+
+        query = SQL(
+            "SELECT DISTINCT pg_group.groname "
+            "FROM pg_catalog.pg_group "
+            "LEFT JOIN pg_catalog.pg_auth_members ON (pg_auth_members.roleid=pg_group.grosysid) "
+            "LEFT JOIN pg_catalog.pg_user ON (pg_auth_members.member=pg_user.usesysid) "
+            "WHERE {user_filter} "
+            "ORDER BY 1"
+        )
+
+        query = query.format(user_filter=user_filter.format(user=user_regex))
         rows = self._execute_query(query)
 
         for row in rows:
-            group = row["name"]
+            group = row["groname"]
             if group not in self._SYSTEM_ROLES:
                 yield group
 
