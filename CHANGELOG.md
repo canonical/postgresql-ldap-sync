@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog][docs-changelog], and the version adher
 
 
 ## Unreleased
+### Fixed
+- Possible crash when deleting a user that owns resources.
 
 ## [0.2.1][changes-0.2.1] - 2025-02-26
 ### Added
