@@ -46,6 +46,8 @@ class DefaultPostgresClient(BasePostgreClient):
         auto_commit: bool = True,
     ):
         """Initialize the psycopg2 internal client."""
+        self.username = username
+
         self._client = psycopg2.connect(
             host=host,
             port=port,
@@ -97,15 +99,22 @@ class DefaultPostgresClient(BasePostgreClient):
 
     def _delete_role(self, role: str) -> None:
         """Delete a role in PostgreSQL."""
-        quoted_role = Identifier(role)
+        quoted_delete_role = Identifier(role)
+        quoted_system_role = Identifier(self.username)
 
-        query = SQL("DROP ROLE {role}")
-        query = query.format(role=quoted_role)
+        query_1 = SQL("REASSIGN OWNED BY {delete_role} TO {system_role}").format(
+            delete_role=quoted_delete_role,
+            system_role=quoted_system_role,
+        )
+        query_2 = SQL("DROP OWNED BY {role}").format(role=quoted_delete_role)
+        query_3 = SQL("DROP ROLE {role}").format(role=quoted_delete_role)
 
         try:
-            self._execute_query(query)
+            self._execute_query(query_1)
+            self._execute_query(query_2)
+            self._execute_query(query_3)
         except ProgrammingError:
-            logger.error(f"Could not delete role {quoted_role}")
+            logger.error(f"Could not delete role {quoted_delete_role}")
 
     def _grant_role_memberships(self, groups: list[str], users: list[str]) -> None:
         """Grant role membership to a list of roles."""
