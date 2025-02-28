@@ -57,13 +57,23 @@ class DefaultPostgresClient(BasePostgreClient):
             autocommit=auto_commit,
         )
 
-    def _execute_query(self, query: Composable) -> list[RealDictRow]:
+    def _execute_query(self, query: Composable) -> None:
         """Execute a SQL query and return the results."""
         with self._client.cursor(cursor_factory=RealDictCursor) as cursor:
             try:
                 cursor.execute(query)
             except DatabaseError as error:
-                logger.error(error.pgerror)
+                logger.error(error)
+                self._client.rollback()
+                raise
+
+    def _fetch_results(self, query: Composable) -> list[RealDictRow]:
+        """Execute a SQL query and return the results."""
+        with self._client.cursor(cursor_factory=RealDictCursor) as cursor:
+            try:
+                cursor.execute(query)
+            except DatabaseError as error:
+                logger.error(error)
                 self._client.rollback()
                 raise
             else:
@@ -175,7 +185,7 @@ class DefaultPostgresClient(BasePostgreClient):
         )
 
         query = query.format(group_filter=group_filter.format(group=group_regex))
-        rows = self._execute_query(query)
+        rows = self._fetch_results(query)
 
         for row in rows:
             user = row["usename"]
@@ -201,7 +211,7 @@ class DefaultPostgresClient(BasePostgreClient):
         )
 
         query = query.format(user_filter=user_filter.format(user=user_regex))
-        rows = self._execute_query(query)
+        rows = self._fetch_results(query)
 
         for row in rows:
             group = row["groname"]
@@ -217,7 +227,7 @@ class DefaultPostgresClient(BasePostgreClient):
             "JOIN pg_catalog.pg_group ON (pg_auth_members.roleid=pg_group.grosysid) "
             "ORDER BY 1, 2"
         )
-        rows = self._execute_query(query)
+        rows = self._fetch_results(query)
 
         group_func = lambda row: row["groname"]
         user_func = lambda row: row["usename"]
