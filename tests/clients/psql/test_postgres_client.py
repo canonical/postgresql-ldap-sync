@@ -4,6 +4,7 @@
 import os
 
 import pytest
+from psycopg2.sql import SQL
 
 from postgresql_ldap_sync.clients import DefaultPostgresClient
 from postgresql_ldap_sync.models import GroupMembers
@@ -47,8 +48,31 @@ class TestDefaultPostgresClient:
 
         users = client.search_users()
         users = list(users)
-
         assert "john" in users
+
+    def test_delete_user_without_ownership(self, client: DefaultPostgresClient):
+        """Test the delete_user functionality when the user does not own a resource."""
+        user_name = "user_deleted_without_ownership"
+
+        client.create_user(user_name)
+        client.delete_user(user_name)
+
+        users = client.search_users()
+        users = list(users)
+        assert user_name not in users
+
+    def test_delete_user_with_ownership(self, client: DefaultPostgresClient):
+        """Test the delete_user functionality when the user does own a resource."""
+        user_name = "user_deleted_with_ownership"
+
+        client.create_user(user_name)
+        client._execute_query(SQL("CREATE TABLE user_table (id SERIAL)"))
+        client._execute_query(SQL(f"ALTER TABLE user_table OWNER TO {user_name}"))
+        client.delete_user(user_name)
+
+        users = client.search_users()
+        users = list(users)
+        assert user_name not in users
 
     def test_create_group(self, client: DefaultPostgresClient):
         """Test the create_user functionality."""
@@ -56,8 +80,31 @@ class TestDefaultPostgresClient:
 
         groups = client.search_groups()
         groups = list(groups)
-
         assert "group_rw" in groups
+
+    def test_delete_group_without_ownership(self, client: DefaultPostgresClient):
+        """Test the delete_group functionality when the group does own a resource."""
+        group_name = "group_deleted_without_ownership"
+
+        client.create_group(group_name)
+        client.delete_group(group_name)
+
+        groups = client.search_groups()
+        groups = list(groups)
+        assert group_name not in groups
+
+    def test_delete_group_with_ownership(self, client: DefaultPostgresClient):
+        """Test the delete_group functionality when the group does own a resource."""
+        group_name = "group_deleted_with_ownership"
+
+        client.create_group(group_name)
+        client._execute_query(SQL("CREATE TABLE group_table (id SERIAL)"))
+        client._execute_query(SQL(f"ALTER TABLE group_table OWNER TO {group_name}"))
+        client.delete_group(group_name)
+
+        groups = client.search_groups()
+        groups = list(groups)
+        assert group_name not in groups
 
     def test_search_users_scoped(self, client: DefaultPostgresClient):
         """Test the search_users functionality from a group."""
