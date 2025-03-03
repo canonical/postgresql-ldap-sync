@@ -33,43 +33,34 @@ class GLAuthClient(BaseLDAPClient):
             logger.warning(f"Could not decode name '{name}'")
             return ""
 
-    @staticmethod
-    def _validate_filters(filters: list[str]) -> None:
-        """Validate the query filters format."""
-        for f in filters:
-            if not f.startswith("(") or not f.endswith(")"):
-                raise ValueError("Filters must be wrapped in parenthesis")
-
-    def _build_user_filter(self, filters: list[str]) -> str:
-        """Build a user filter string given a range of query filters."""
-        self._validate_filters(filters)
-
-        # fmt: off
+    def _build_user_filter(self, groups: list[str]) -> str:
+        """Build a user filter string given a range of groups."""
         return (
             f"(&"
             f"{''.join(self._REQUIRED_USER_FILTERS)}"
-            f"{''.join(filters)}"
+            f"(|"
+            f"{''.join(f'(ou={group})' for group in groups)}"
+            f")"
             f")"
         )
 
-    def _build_group_filter(self, filters: list[str]) -> str:
-        """Build a group filter string given a range of query filters."""
-        self._validate_filters(filters)
-
-        # fmt: off
+    def _build_group_filter(self, users: list[str]) -> str:
+        """Build a group filter string given a range of users."""
         return (
             f"(&"
             f"{''.join(self._REQUIRED_GROUP_FILTERS)}"
-            f"{''.join(filters)}"
+            f"(|"
+            f"{''.join(f'(memberUid={user})' for user in users)}"
+            f")"
             f")"
         )
 
-    def search_users(self, filters: list[str] | None = None) -> Iterator[str]:
+    def search_users(self, from_groups: list[str] | None = None) -> Iterator[str]:
         """Search for LDAP users."""
-        if filters is None:
-            filters = []
+        if from_groups is None:
+            from_groups = ["*"]
 
-        filter_str = self._build_user_filter(filters)
+        filter_str = self._build_user_filter(from_groups)
 
         users = self._client.search_s(
             base=self._base_dn,
@@ -81,12 +72,12 @@ class GLAuthClient(BaseLDAPClient):
         for _, user in users:
             yield self._decode_name(user["cn"][0])
 
-    def search_groups(self, filters: list[str] | None = None) -> Iterator[str]:
+    def search_groups(self, from_users: list[str] | None = None) -> Iterator[str]:
         """Search for LDAP groups."""
-        if filters is None:
-            filters = []
+        if from_users is None:
+            from_users = ["*"]
 
-        filter_str = self._build_group_filter(filters)
+        filter_str = self._build_group_filter(from_users)
 
         groups = self._client.search_s(
             base=self._base_dn,
@@ -98,12 +89,9 @@ class GLAuthClient(BaseLDAPClient):
         for _, group in groups:
             yield self._decode_name(group["cn"][0])
 
-    def search_group_memberships(self, filters: list[str] | None = None) -> Iterator[GroupMembers]:
+    def search_group_memberships(self) -> Iterator[GroupMembers]:
         """Search for LDAP group memberships."""
-        if filters is None:
-            filters = []
-
-        filter_str = self._build_group_filter(filters)
+        filter_str = self._build_group_filter(["*"])
 
         memberships = self._client.search_s(
             base=self._base_dn,
