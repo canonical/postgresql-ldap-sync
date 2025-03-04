@@ -46,7 +46,8 @@ class DefaultPostgresClient(BasePostgreClient):
         auto_commit: bool = True,
     ):
         """Initialize the psycopg2 internal client."""
-        self._user = username
+        self.username = username
+
         self._client = psycopg2.connect(
             host=host,
             port=port,
@@ -64,7 +65,7 @@ class DefaultPostgresClient(BasePostgreClient):
             try:
                 cursor.execute(query)
             except DatabaseError as error:
-                logger.error(error.pgerror)
+                logger.error(error)
                 self._client.rollback()
                 raise
 
@@ -74,7 +75,7 @@ class DefaultPostgresClient(BasePostgreClient):
             try:
                 cursor.execute(query)
             except DatabaseError as error:
-                logger.error(error.pgerror)
+                logger.error(error)
                 self._client.rollback()
                 raise
             else:
@@ -99,7 +100,7 @@ class DefaultPostgresClient(BasePostgreClient):
     def _delete_role(self, role: str) -> None:
         """Delete a role in PostgreSQL."""
         quoted_delete_role = Identifier(role)
-        quoted_system_role = Identifier(self._user)
+        quoted_system_role = Identifier(self.username)
 
         query_1 = SQL("REASSIGN OWNED BY {delete_role} TO {system_role}").format(
             delete_role=quoted_delete_role,
