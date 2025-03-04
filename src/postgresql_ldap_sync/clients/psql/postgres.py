@@ -46,6 +46,8 @@ class DefaultPostgresClient(BasePostgreClient):
         auto_commit: bool = True,
     ):
         """Initialize the psycopg2 internal client."""
+        self.username = username
+
         self._client = psycopg2.connect(
             host=host,
             port=port,
@@ -57,13 +59,23 @@ class DefaultPostgresClient(BasePostgreClient):
             autocommit=auto_commit,
         )
 
-    def _execute_query(self, query: Composable) -> list[RealDictRow]:
+    def _execute_query(self, query: Composable) -> None:
         """Execute a SQL query and return the results."""
         with self._client.cursor(cursor_factory=RealDictCursor) as cursor:
             try:
                 cursor.execute(query)
             except DatabaseError as error:
-                logger.error(error.pgerror)
+                logger.error(error)
+                self._client.rollback()
+                raise
+
+    def _fetch_results(self, query: Composable) -> list[RealDictRow]:
+        """Execute a SQL query and return the results."""
+        with self._client.cursor(cursor_factory=RealDictCursor) as cursor:
+            try:
+                cursor.execute(query)
+            except DatabaseError as error:
+                logger.error(error)
                 self._client.rollback()
                 raise
             else:
@@ -87,15 +99,22 @@ class DefaultPostgresClient(BasePostgreClient):
 
     def _delete_role(self, role: str) -> None:
         """Delete a role in PostgreSQL."""
-        quoted_role = Identifier(role)
+        quoted_delete_role = Identifier(role)
+        quoted_system_role = Identifier(self.username)
 
-        query = SQL("DROP ROLE {role}")
-        query = query.format(role=quoted_role)
+        query_1 = SQL("REASSIGN OWNED BY {delete_role} TO {system_role}").format(
+            delete_role=quoted_delete_role,
+            system_role=quoted_system_role,
+        )
+        query_2 = SQL("DROP OWNED BY {role}").format(role=quoted_delete_role)
+        query_3 = SQL("DROP ROLE {role}").format(role=quoted_delete_role)
 
         try:
-            self._execute_query(query)
+            self._execute_query(query_1)
+            self._execute_query(query_2)
+            self._execute_query(query_3)
         except ProgrammingError:
-            logger.error(f"Could not delete role {quoted_role}")
+            logger.error(f"Could not delete role {quoted_delete_role}")
 
     def _grant_role_memberships(self, groups: list[str], users: list[str]) -> None:
         """Grant role membership to a list of roles."""
@@ -175,7 +194,7 @@ class DefaultPostgresClient(BasePostgreClient):
         )
 
         query = query.format(group_filter=group_filter.format(group=group_regex))
-        rows = self._execute_query(query)
+        rows = self._fetch_results(query)
 
         for row in rows:
             user = row["usename"]
@@ -201,7 +220,7 @@ class DefaultPostgresClient(BasePostgreClient):
         )
 
         query = query.format(user_filter=user_filter.format(user=user_regex))
-        rows = self._execute_query(query)
+        rows = self._fetch_results(query)
 
         for row in rows:
             group = row["groname"]
@@ -217,7 +236,7 @@ class DefaultPostgresClient(BasePostgreClient):
             "JOIN pg_catalog.pg_group ON (pg_auth_members.roleid=pg_group.grosysid) "
             "ORDER BY 1, 2"
         )
-        rows = self._execute_query(query)
+        rows = self._fetch_results(query)
 
         group_func = lambda row: row["groname"]
         user_func = lambda row: row["usename"]
