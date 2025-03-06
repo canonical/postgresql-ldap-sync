@@ -4,7 +4,7 @@
 import os
 
 import pytest
-from psycopg2.sql import SQL
+from psycopg2.sql import SQL, Literal
 
 from postgresql_ldap_sync.clients import DefaultPostgresClient
 from postgresql_ldap_sync.models import GroupMembers
@@ -42,6 +42,17 @@ class TestDefaultPostgresClient:
 
         client.close()
 
+    @staticmethod
+    def _fetch_table_owner(client: DefaultPostgresClient, table_name: str) -> str:
+        """Helper function to fetch the ownership of a particular table."""
+        table_owner = client._fetch_results(
+            SQL("SELECT tableowner FROM pg_tables WHERE tablename = {table_name}").format(
+                table_name=Literal(table_name)
+            )
+        )
+
+        return table_owner[0]["tableowner"]
+
     def test_create_user(self, client: DefaultPostgresClient):
         """Test the create_user functionality."""
         client.create_user("john")
@@ -69,6 +80,9 @@ class TestDefaultPostgresClient:
         client._execute_query(SQL("CREATE TABLE user_table (id SERIAL)"))
         client._execute_query(SQL(f"ALTER TABLE user_table OWNER TO {user_name}"))
         client.delete_user(user_name)
+
+        owner = self._fetch_table_owner(client, "user_table")
+        assert owner == client.username
 
         users = client.search_users()
         users = list(users)
@@ -101,6 +115,9 @@ class TestDefaultPostgresClient:
         client._execute_query(SQL("CREATE TABLE group_table (id SERIAL)"))
         client._execute_query(SQL(f"ALTER TABLE group_table OWNER TO {group_name}"))
         client.delete_group(group_name)
+
+        owner = self._fetch_table_owner(client, "group_table")
+        assert owner == client.username
 
         groups = client.search_groups()
         groups = list(groups)
