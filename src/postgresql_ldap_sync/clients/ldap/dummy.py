@@ -22,6 +22,6 @@ class DummyLDAPClient(BaseLDAPClient):
         """Search for LDAP groups."""
         return self._groups
 
-    def search_group_memberships(self, _: list[str] | None = None) -> list[GroupMembers]:
+    def search_group_memberships(self) -> list[GroupMembers]:
         """Search for LDAP group memberships."""
         return self._group_memberships
