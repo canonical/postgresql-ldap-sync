@@ -57,7 +57,7 @@ class GLAuthClient(BaseLDAPClient):
 
     def search_users(self, from_groups: list[str] | None = None) -> Iterator[str]:
         """Search for LDAP users."""
-        if from_groups is None:
+        if not from_groups:
             from_groups = ["*"]
 
         filter_str = self._build_user_filter(from_groups)
@@ -74,7 +74,7 @@ class GLAuthClient(BaseLDAPClient):
 
     def search_groups(self, from_users: list[str] | None = None) -> Iterator[str]:
         """Search for LDAP groups."""
-        if from_users is None:
+        if not from_users:
             from_users = ["*"]
 
         filter_str = self._build_group_filter(from_users)
