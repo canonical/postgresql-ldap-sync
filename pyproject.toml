@@ -8,7 +8,7 @@ description = "Project to sync LDAP users / groups to PostgreSQL"
 requires-python = ">=3.10"
 license = "Apache-2.0"
 readme = "README.md"
-version = "0.2.1"
+version = "0.3.0"
 authors = [
     { name = "Sinclert Perez", email = "sinclert.perez@canonical.com" }
 ]
