@@ -1,0 +1,39 @@
+# Copyright 2025 Canonical Ltd.
+# See LICENSE file for licensing details.
+name: Publish PPA
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  publish-ppa:
+    name: "Publish to PPA"
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: "Install binaries"
+        run: |
+          sudo apt update
+          sudo apt install build-essential
+          sudo apt install devscripts
+      - name: "Create Debian changelog"
+        run: dch --create
+      - name: "Download latest version"
+        run: uscan --download-current-version
+      - name: "Build Debian package"
+        env:
+          # Expires 2028-03-12
+          DEBSIGN_KEYID: ${{ secrets.GPG_KEY_ID }}
+        run: |
+          dpkg-buildpackage -sa \
+            --build=source \
+            --no-check-builddeps \
+      - name: "Upload to PPA"
+        run: |
+          dput ppa:data-platform/postgresql-ldap-sync \
+            ../postgresql-ldap-sync_*_source.changes
