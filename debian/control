@@ -1,0 +1,21 @@
+Source: postgresql-ldap-sync
+Maintainer: Canonical Data Platform <data-platform@lists.launchpad.net>
+Uploaders: Canonical Data Platform <data-platform@lists.launchpad.net>
+Section: python
+Priority: optional
+Build-Depends: debhelper-compat (= 13),
+               dh-python,
+               python3-poetry,
+               python3-all,
+               python3-ldap,
+               python3-psycopg2
+Standards-Version: 4.7.2
+Rules-Requires-Root: no
+
+Package: python3-postgresql-ldap-sync
+Architecture: all
+Depends: ${python3:Depends},
+         ${misc:Depends},
+         python3-ldap,
+         python3-psycopg2
+Description: Tool to synchronize LDAP users/groups to PostgreSQL
