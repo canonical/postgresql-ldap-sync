@@ -5,7 +5,6 @@ Section: python
 Priority: optional
 Build-Depends: debhelper-compat (= 13),
                dh-python,
-               pybuild-plugin-pyproject,
                python3-poetry,
                python3-all,
                python3-ldap,

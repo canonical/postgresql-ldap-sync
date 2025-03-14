@@ -8,9 +8,11 @@ on:
       - "*"
 
 env:
-  DEBEMAIL: data-platform@lists.launchpad.net
-  DEBFULLNAME: Data Platform
-  DEBSIGN_KEY: ${{ secrets.GPG_PRIVATE_KEY }} # Expires 2028-03-12
+  # Both email and fullname must coincide with those used when creating the GPG key.
+  # Current GPG key expires on 2028-03-12.
+  DEBEMAIL: sinclert.perez@canonical.com
+  DEBFULLNAME: Sinclert Perez
+  DEBSIGN_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
   DEBSIGN_KEYID: ${{ secrets.GPG_PRIVATE_KEY_ID }}
 
 jobs:
@@ -20,8 +22,6 @@ jobs:
     steps:
       - name: "Checkout"
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
       - name: "Install binaries"
         run: |
           sudo apt update
@@ -29,22 +29,20 @@ jobs:
           sudo apt install devscripts
           sudo apt install dh-make
           sudo apt install dh-python
-      - name: "Install poetry"
-        run: pipx install poetry
+          sudo apt install python3-poetry
       - name: "Export package information"
-        run: echo "VERSION=$(poetry version --short)" >> "$GITHUB_ENV"
+        run: |
+          echo "VERSION=$(poetry version --short)" >> "$GITHUB_ENV"
       - name: "Create Debian changelog"
         run: |
           dch --create \
+            --force-distribution \
+            --distribution plucky \
             --package postgresql-ldap-sync \
             --newversion ${{ env.VERSION }}
       - name: "Download latest version"
-        run: uscan --download-current-version
-      - name: "Create Debian patch"
         run: |
-          dpkg-source --commit \
-            --diff-ignore=".git|.github|tests|\.ini|\.lock|\.yaml" \
-            . Files
+          uscan --download-current-version
       - name: "Import GPG key"
         run: |
           echo "${GPG_PRIVATE_KEY}" | gpg --batch --quiet --import
