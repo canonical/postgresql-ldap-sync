@@ -1,16 +1,14 @@
 # Copyright 2025 Canonical Ltd.
 # See LICENSE file for licensing details.
-name: Publish
+name: Release
 
 on:
   workflow_dispatch:
 
 jobs:
-  build:
-    name: "Build package"
+  release:
+    name: "Create a GitHub release"
     runs-on: ubuntu-latest
-    outputs:
-      VERSION: ${{ steps.export.outputs.VERSION }}
     steps:
       - name: "Checkout"
         uses: actions/checkout@v4
@@ -19,54 +17,17 @@ jobs:
       - name: "Install poetry"
         run: pipx install poetry
       - name: "Export package information"
-        id: export
         run: |
           VERSION=$(poetry version --short)
           if [ "$(git tag -l "${VERSION}")" ]; then
             echo "Tag ${VERSION} already exists. Please bump the project to a greater version."
             exit 1
           fi
-          echo "VERSION=$VERSION" >> "$GITHUB_OUTPUT"
-      - name: "Build package"
-        run: poetry build
-      - name: "Store the distribution packages"
-        uses: actions/upload-artifact@v4
-        with:
-          name: distfiles
-          path: dist/
-
-  upload-github:
-    name: "Publish to GitHub"
-    needs: [build]
-    runs-on: ubuntu-latest
-    steps:
-      - name: "Checkout"
-        uses: actions/checkout@v4
-      - name: "Download all the dists"
-        uses: actions/download-artifact@v4
-        with:
-          name: distfiles
-          path: dist/
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
       - name: "Create GitHub release"
         run: |
-          git tag "${{ needs.build.outputs.VERSION }}"
-          git push origin "${{ needs.build.outputs.VERSION }}"
-          gh release create "${{ needs.build.outputs.VERSION }}" --generate-notes --title "${{ needs.build.outputs.VERSION }}"
-          gh release upload "${{ needs.build.outputs.VERSION }}" dist/*.{tar.gz,whl}
+          git tag "${{ env.VERSION }}"
+          git push origin "${{ env.VERSION }}"
+          gh release create "${{ env.VERSION }}" --generate-notes --title "${{ env.VERSION }}"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  upload-pypi:
-    name: "Publish to PyPI"
-    needs: [build]
-    runs-on: ubuntu-latest
-    steps:
-      - name: "Download all the dists"
-        uses: actions/download-artifact@v4
-        with:
-          name: distfiles
-          path: dist/
-      - name: "Publish to PyPI"
-        uses: pypa/gh-action-pypi-publish@release/v1
-    permissions:
-      id-token: write
