@@ -36,10 +36,9 @@ jobs:
       - name: "Create Debian changelog"
         run: |
           dch --create \
-            --force-distribution \
             --distribution plucky \
             --package postgresql-ldap-sync \
-            --newversion ${{ env.VERSION }}
+            --newversion ${{ env.VERSION }}-0ubuntu1
       - name: "Download latest version"
         run: |
           uscan --download-current-version
