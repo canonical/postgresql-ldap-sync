@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog][docs-changelog], and the version adher
 
 
 ## Unreleased
+
+## [0.3.1][changes-0.3.1] - 2025-03-26
 ### Fixed
 - Avoid PostgreSQL `GRANT` and `REVOKE` queries when receiving empty lists.
 
@@ -32,9 +34,10 @@ The format is based on [Keep a Changelog][docs-changelog], and the version adher
 - Initial documentation.
 
 
-[changes-0.1.0]: https://github.com/canonical/postgresql-ldap-sync/releases/tag/v0.1.0
-[changes-0.2.0]: https://github.com/canonical/postgresql-ldap-sync/compare/v0.1.0...v0.2.0
-[changes-0.2.1]: https://github.com/canonical/postgresql-ldap-sync/compare/v0.2.0...v0.2.1
-[changes-0.3.0]: https://github.com/canonical/postgresql-ldap-sync/compare/v0.2.1...v0.3.0
+[changes-0.1.0]: https://github.com/canonical/postgresql-ldap-sync/releases/tag/0.1.0
+[changes-0.2.0]: https://github.com/canonical/postgresql-ldap-sync/compare/0.1.0...0.2.0
+[changes-0.2.1]: https://github.com/canonical/postgresql-ldap-sync/compare/0.2.0...0.2.1
+[changes-0.3.0]: https://github.com/canonical/postgresql-ldap-sync/compare/0.2.1...0.3.0
+[changes-0.3.1]: https://github.com/canonical/postgresql-ldap-sync/compare/0.3.0...0.3.1
 [docs-changelog]: https://keepachangelog.com/en/1.0.0/
 [docs-semver]: https://semver.org/spec/v2.0.0.html
