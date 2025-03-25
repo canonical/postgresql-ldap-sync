@@ -100,6 +100,8 @@ Commits can be tagged to create releases of the package, in order to do so:
 2. Add a new section to the `CHANGELOG.md`.
 3. Commit + push the changes.
 4. Trigger the [release workflow][github-workflows].
+5. Wait until the package is published both to PyPI and the Data Platform PPA.
+6. Navigate to the package [PPA page][launchpad-ppa], and copy the latest release the desired series.
 
 
 ## 🧡 Acknowledges
@@ -116,5 +118,6 @@ This project is a Python port of the popular [pg-ldap-sync][github-pg-ldap-sync]
 
 [docs-pytest]: https://docs.pytest.org/en/latest/#
 [docs-ruff]: https://docs.astral.sh/ruff/
+[launchpad-ppa]: https://launchpad.net/~data-platform/+archive/ubuntu/postgresql-ldap-sync/+packages
 [github-pg-ldap-sync]: https://github.com/larskanis/pg-ldap-sync
 [github-workflows]: https://github.com/canonical/postgresql-ldap-sync/actions/workflows/release.yaml
