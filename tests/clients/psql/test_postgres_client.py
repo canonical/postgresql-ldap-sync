@@ -123,6 +123,47 @@ class TestDefaultPostgresClient:
         groups = list(groups)
         assert group_name not in groups
 
+    def test_grant_group_memberships(self, client: DefaultPostgresClient):
+        """Test the grant_group_membership functionality."""
+        user_name = "user_grant"
+        group_name = "group_grant"
+
+        client.create_user(user_name)
+        client.create_group(group_name)
+        client.grant_group_memberships([group_name], [user_name])
+
+        users = client.search_users(from_group=group_name)
+        users = list(users)
+        assert user_name in users
+
+        client.delete_user(user_name)
+        client.delete_group(group_name)
+
+    def test_grant_group_memberships_empty(self, client: DefaultPostgresClient):
+        """Test the grant_group_membership functionality with empty lists."""
+        client.grant_group_memberships([], [])
+
+    def test_revoke_group_memberships(self, client: DefaultPostgresClient):
+        """Test the revoke_group_membership functionality."""
+        user_name = "user_revoke"
+        group_name = "group_revoke"
+
+        client.create_user(user_name)
+        client.create_group(group_name)
+        client.grant_group_memberships([group_name], [user_name])
+        client.revoke_group_memberships([group_name], [user_name])
+
+        users = client.search_users(from_group=group_name)
+        users = list(users)
+        assert user_name not in users
+
+        client.delete_user(user_name)
+        client.delete_group(group_name)
+
+    def test_revoke_group_memberships_empty(self, client: DefaultPostgresClient):
+        """Test the revoke_group_membership functionality with empty lists."""
+        client.revoke_group_memberships([], [])
+
     def test_search_users_scoped(self, client: DefaultPostgresClient):
         """Test the search_users functionality from a group."""
         users = client.search_users(from_group="group_1")

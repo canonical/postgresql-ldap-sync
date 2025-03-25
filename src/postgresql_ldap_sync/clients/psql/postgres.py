@@ -169,10 +169,16 @@ class DefaultPostgresClient(BasePostgreClient):
 
     def grant_group_memberships(self, groups: list[str], users: list[str]) -> None:
         """Grant groups membership to a list of users."""
+        if not groups or not users:
+            return
+
         self._grant_role_memberships(groups, users)
 
     def revoke_group_memberships(self, groups: list[str], users: list[str]) -> None:
         """Revoke groups membership from a list of users."""
+        if not groups or not users:
+            return
+
         self._revoke_role_memberships(groups, users)
 
     def search_users(self, from_group: str | None = None) -> Iterator[str]:

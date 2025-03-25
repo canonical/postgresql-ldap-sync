@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog][docs-changelog], and the version adher
 
 
 ## Unreleased
+### Fixed
+- Avoid PostgreSQL `GRANT` and `REVOKE` queries when receiving empty lists.
 
 ## [0.3.0][changes-0.3.0] - 2025-03-11
 ### Added
