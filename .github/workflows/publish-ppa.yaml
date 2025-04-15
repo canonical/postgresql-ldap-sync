@@ -1,0 +1,57 @@
+# Copyright 2025 Canonical Ltd.
+# See LICENSE file for licensing details.
+name: Publish PPA
+
+on:
+  push:
+    tags:
+      - "*"
+
+env:
+  # Both email and fullname must coincide with those used when creating the GPG key.
+  # Current GPG key expires on 2028-03-12.
+  DEBEMAIL: sinclert.perez@canonical.com
+  DEBFULLNAME: Sinclert Perez
+  DEBSIGN_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+  DEBSIGN_KEYID: ${{ secrets.GPG_PRIVATE_KEY_ID }}
+
+jobs:
+  publish-ppa:
+    name: "Publish to PPA"
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+      - name: "Install binaries"
+        run: |
+          sudo apt update
+          sudo apt install build-essential
+          sudo apt install devscripts
+          sudo apt install dh-make
+          sudo apt install dh-python
+          sudo apt install python3-poetry
+      - name: "Export package information"
+        run: |
+          echo "VERSION=$(poetry version --short)" >> "$GITHUB_ENV"
+      - name: "Create Debian changelog"
+        run: |
+          dch --create \
+            --distribution plucky \
+            --package postgresql-ldap-sync \
+            --newversion ${{ env.VERSION }}-0ubuntu1
+      - name: "Download latest version"
+        run: |
+          uscan --download-current-version
+      - name: "Import GPG key"
+        run: |
+          echo "${GPG_PRIVATE_KEY}" | gpg --batch --quiet --import
+      - name: "Build Debian package"
+        run: |
+          dpkg-buildpackage -sa \
+            --no-check-builddeps \
+            --build=source \
+            --force-sign
+      - name: "Upload to PPA"
+        run: |
+          dput ppa:data-platform/postgresql-ldap-sync \
+            ../postgresql-ldap-sync_*_source.changes
