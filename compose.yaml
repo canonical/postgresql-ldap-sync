@@ -3,14 +3,14 @@ name: "pg-ldap-sync"
 services:
 
   glauth:
-    image: glauth/glauth:v2.3.2
+    image: docker.io/glauth/glauth:v2.3.2
     ports:
       - "3893:3893"
     volumes:
       - ./tests/_configs/glauth.cfg:/app/config/config.cfg
 
   postgres:
-    image: postgres:16-alpine
+    image: docker.io/postgres:16-alpine
     ports:
       - "5432:5432"
     environment:
