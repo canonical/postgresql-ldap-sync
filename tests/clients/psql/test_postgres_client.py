@@ -42,10 +42,15 @@ class TestDefaultPostgresClient:
 
         client.close()
 
+    @pytest.fixture(scope="class")
+    def client_user(self):
+        """Client username to be used throughout the tests."""
+        return os.environ["POSTGRES_USERNAME"]
+
     @staticmethod
     def _fetch_table_owner(client: DefaultPostgresClient, table_name: str) -> str:
         """Helper function to fetch the ownership of a particular table."""
-        table_owner = client._fetch_results(
+        table_owner = client._executor.fetch_results(
             SQL("SELECT tableowner FROM pg_tables WHERE tablename = {table_name}").format(
                 table_name=Literal(table_name)
             )
@@ -72,17 +77,17 @@ class TestDefaultPostgresClient:
         users = list(users)
         assert user_name not in users
 
-    def test_delete_user_with_ownership(self, client: DefaultPostgresClient):
+    def test_delete_user_with_ownership(self, client: DefaultPostgresClient, client_user: str):
         """Test the delete_user functionality when the user does own a resource."""
         user_name = "user_deleted_with_ownership"
 
         client.create_user(user_name)
-        client._execute_query(SQL("CREATE TABLE user_table (id SERIAL)"))
-        client._execute_query(SQL(f"ALTER TABLE user_table OWNER TO {user_name}"))
+        client._executor.execute_query(SQL("CREATE TABLE user_table (id SERIAL)"))
+        client._executor.execute_query(SQL(f"ALTER TABLE user_table OWNER TO {user_name}"))
         client.delete_user(user_name)
 
         owner = self._fetch_table_owner(client, "user_table")
-        assert owner == client.username
+        assert owner == client_user
 
         users = client.search_users()
         users = list(users)
@@ -107,17 +112,17 @@ class TestDefaultPostgresClient:
         groups = list(groups)
         assert group_name not in groups
 
-    def test_delete_group_with_ownership(self, client: DefaultPostgresClient):
+    def test_delete_group_with_ownership(self, client: DefaultPostgresClient, client_user: str):
         """Test the delete_group functionality when the group does own a resource."""
         group_name = "group_deleted_with_ownership"
 
         client.create_group(group_name)
-        client._execute_query(SQL("CREATE TABLE group_table (id SERIAL)"))
-        client._execute_query(SQL(f"ALTER TABLE group_table OWNER TO {group_name}"))
+        client._executor.execute_query(SQL("CREATE TABLE group_table (id SERIAL)"))
+        client._executor.execute_query(SQL(f"ALTER TABLE group_table OWNER TO {group_name}"))
         client.delete_group(group_name)
 
         owner = self._fetch_table_owner(client, "group_table")
-        assert owner == client.username
+        assert owner == client_user
 
         groups = client.search_groups()
         groups = list(groups)
