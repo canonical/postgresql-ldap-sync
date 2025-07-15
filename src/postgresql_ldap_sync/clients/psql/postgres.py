@@ -198,18 +198,23 @@ class DefaultPostgresClient(BasePostgreClient):
         except ProgrammingError:
             logger.error(f"Could not revoke memberships from groups {quoted_groups}")
 
-    def _list_databases(self, ignored: list[str] | None = None) -> Iterator[str]:
+    def _list_databases(self, ignored: list[str]) -> Iterator[str]:
         """List all databases within the instance."""
-        quoted_ignored = SQL(",").join(Literal(db) for db in ignored)
+        if ignored:
+            database_filter = SQL("NOT datistemplate AND datname NOT IN ({ignored})")
+            database_ignored = SQL(",").join(Literal(db) for db in ignored)
+        else:
+            database_filter = SQL("NOT datistemplate")
+            database_ignored = SQL("")
 
         query = SQL(
-            "SELECT datname "
+            "SELECT DISTINCT datname "
             "FROM pg_catalog.pg_database "
-            "WHERE datname NOT IN ({ignored}) AND datistemplate = false "
+            "WHERE {database_filter} "
             "ORDER BY 1"
         )
 
-        query = query.format(ignored=quoted_ignored)
+        query = query.format(database_filter=database_filter.format(ignored=database_ignored))
         rows = self._executor.fetch_results(query)
 
         for row in rows:
