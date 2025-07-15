@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog][docs-changelog], and the version adher
 
 ## Unreleased
 
+## [0.3.2][changes-0.3.2] - 2025-07-15
+### Fixed
+- Possible crash when deleting a user that owns resources in other databases.
+
 ## [0.3.1][changes-0.3.1] - 2025-03-26
 ### Fixed
 - Avoid PostgreSQL `GRANT` and `REVOKE` queries when receiving empty lists.
@@ -39,5 +43,6 @@ The format is based on [Keep a Changelog][docs-changelog], and the version adher
 [changes-0.2.1]: https://github.com/canonical/postgresql-ldap-sync/compare/0.2.0...0.2.1
 [changes-0.3.0]: https://github.com/canonical/postgresql-ldap-sync/compare/0.2.1...0.3.0
 [changes-0.3.1]: https://github.com/canonical/postgresql-ldap-sync/compare/0.3.0...0.3.1
+[changes-0.3.2]: https://github.com/canonical/postgresql-ldap-sync/compare/0.3.1...0.3.2
 [docs-changelog]: https://keepachangelog.com/en/1.0.0/
 [docs-semver]: https://semver.org/spec/v2.0.0.html
