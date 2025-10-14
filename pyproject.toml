@@ -22,7 +22,7 @@ maintainers = [
 ]
 dependencies = [
     "psycopg2 >= 2.9.0",
-    "python-ldap >= 3.4.0",
+    "python-ldap >= 3.4.5",
 ]
 
 [project.optional-dependencies]
