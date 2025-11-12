@@ -10,15 +10,10 @@ license = "Apache-2.0"
 readme = "README.md"
 version = "0.3.2"
 authors = [
-    { name = "Sinclert Perez", email = "sinclert.perez@canonical.com" }
+    { name = "Sinclert Perez", email = "sinclert.perez@canonical.com" },
 ]
 maintainers = [
-    { name = "Sinclert Perez", email = "sinclert.perez@canonical.com" },
-    { name = "Carl Csaposs", email = "carl.csaposs@canonical.com" },
-    { name = "Dragomir Penev", email = "dragomir.penev@canonical.com" },
-    { name = "Marcelo Neppel", email = "marcelo.neppel@canonical.com" },
-    { name = "Paulo Silveira", email = "paulo.machado@canonical.com" },
-    { name = "Shayan Patel", email = "shayan.patel@canonical.com" },
+    { name = "Canonical Data Platform", email = "data-platform@lists.launchpad.net" },
 ]
 dependencies = [
     "psycopg2 >= 2.9.0",

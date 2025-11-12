@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: "Install binaries"
         run: |
           sudo apt update
@@ -42,7 +42,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: "Install binaries"
         run: |
           sudo apt update
@@ -87,7 +87,7 @@ jobs:
           POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
     steps:
       - name: "Checkout"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: "Copy GLAuth configuration"
         run: docker cp ${{ github.workspace }}/tests/_configs/glauth.cfg glauth:/app/config/config.cfg
       - name: "Restart GLAuth container"
