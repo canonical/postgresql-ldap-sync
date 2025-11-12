@@ -14,11 +14,9 @@ authors = [
 ]
 maintainers = [
     { name = "Sinclert Perez", email = "sinclert.perez@canonical.com" },
-    { name = "Carl Csaposs", email = "carl.csaposs@canonical.com" },
+    { name = "Ahmet Onkol", email = "ahmet.oenkol@canonical.com" },
     { name = "Dragomir Penev", email = "dragomir.penev@canonical.com" },
     { name = "Marcelo Neppel", email = "marcelo.neppel@canonical.com" },
-    { name = "Paulo Silveira", email = "paulo.machado@canonical.com" },
-    { name = "Shayan Patel", email = "shayan.patel@canonical.com" },
 ]
 dependencies = [
     "psycopg2 >= 2.9.0",
