@@ -64,6 +64,12 @@ jobs:
   test-integration:
     name: "Run integration tests"
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        postgres_image:
+          - 16-alpine
+          - 18-alpine
     env:
       GLAUTH_USERNAME: cn=serviceuser,ou=svcaccts,dc=glauth,dc=com
       GLAUTH_PASSWORD: dogood
@@ -77,7 +83,7 @@ jobs:
         ports:
           - 3893:3893
       postgres:
-        image: postgres:18-alpine
+        image: postgres:${{ matrix.postgres_image }}
         options: --name postgres
         ports:
           - 5432:5432
