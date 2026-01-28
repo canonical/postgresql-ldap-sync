@@ -20,14 +20,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout"
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: "Install binaries"
         run: |
           sudo apt update
           sudo apt install libldap2-dev
           sudo apt install libsasl2-dev
       - name: "Set up Python"
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.10"
       - name: "Install poetry & tox"
@@ -42,14 +42,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout"
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: "Install binaries"
         run: |
           sudo apt update
           sudo apt install libldap2-dev
           sudo apt install libsasl2-dev
       - name: "Set up Python"
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.10"
       - name: "Install poetry & tox"
@@ -64,6 +64,12 @@ jobs:
   test-integration:
     name: "Run integration tests"
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        postgres_image:
+          - 16-alpine
+          - 18-alpine
     env:
       GLAUTH_USERNAME: cn=serviceuser,ou=svcaccts,dc=glauth,dc=com
       GLAUTH_PASSWORD: dogood
@@ -77,7 +83,7 @@ jobs:
         ports:
           - 3893:3893
       postgres:
-        image: postgres:16-alpine
+        image: postgres:${{ matrix.postgres_image }}
         options: --name postgres
         ports:
           - 5432:5432
@@ -87,7 +93,7 @@ jobs:
           POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
     steps:
       - name: "Checkout"
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: "Copy GLAuth configuration"
         run: docker cp ${{ github.workspace }}/tests/_configs/glauth.cfg glauth:/app/config/config.cfg
       - name: "Restart GLAuth container"
@@ -98,7 +104,7 @@ jobs:
           sudo apt install libldap2-dev
           sudo apt install libsasl2-dev
       - name: "Set up Python"
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.10"
       - name: "Install poetry & tox"
