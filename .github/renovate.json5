@@ -5,6 +5,12 @@
     "sinclert-canonical",
     "team:data-postgresql"
   ],
-  "packageRules": [],
+  "packageRules": [
+    {
+      "matchManagers": ["github-actions"],
+      "matchDepNames": ["python"],
+      "enabled": false
+    }
+  ],
   "customManagers": [],
 }
