@@ -78,7 +78,7 @@ jobs:
       POSTGRES_PASSWORD: postgres_ldap_sync
     services:
       glauth:
-        image: glauth/glauth:v2.3.2
+        image: glauth/glauth:v2.4.0
         options: --name glauth
         ports:
           - 3893:3893
