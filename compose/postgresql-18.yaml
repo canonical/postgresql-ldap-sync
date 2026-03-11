@@ -3,7 +3,7 @@ name: "postgresql-ldap-sync"
 services:
 
   glauth:
-    image: docker.io/glauth/glauth:v2.3.2
+    image: docker.io/glauth/glauth:v2.4.0
     ports:
       - "3893:3893"
     volumes:
