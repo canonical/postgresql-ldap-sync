@@ -67,51 +67,38 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        postgres_image:
-          - 16-alpine
-          - 18-alpine
+        include:
+          - postgres: { version: "16" }
+          - postgres: { version: "18" }
     env:
       GLAUTH_USERNAME: cn=serviceuser,ou=svcaccts,dc=glauth,dc=com
       GLAUTH_PASSWORD: dogood
       POSTGRES_DATABASE: postgres
       POSTGRES_USERNAME: postgres_ldap_sync
       POSTGRES_PASSWORD: postgres_ldap_sync
-    services:
-      glauth:
-        image: glauth/glauth:v2.4.0
-        options: --name glauth
-        ports:
-          - 3893:3893
-      postgres:
-        image: postgres:${{ matrix.postgres_image }}
-        options: --name postgres
-        ports:
-          - 5432:5432
-        env:
-          POSTGRES_DB: ${{ env.POSTGRES_DATABASE }}
-          POSTGRES_USER: ${{ env.POSTGRES_USERNAME }}
-          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
     steps:
       - name: "Checkout"
         uses: actions/checkout@v6
-      - name: "Copy GLAuth configuration"
-        run: docker cp ${{ github.workspace }}/tests/_configs/glauth.cfg glauth:/app/config/config.cfg
-      - name: "Restart GLAuth container"
-        run: docker restart glauth
+      - name: "Set up Compose"
+        uses: docker/setup-compose-action@v1
+      - name: "Set up Python"
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.10"
       - name: "Install binaries"
         run: |
           sudo apt update
           sudo apt install libldap2-dev
           sudo apt install libsasl2-dev
-      - name: "Set up Python"
-        uses: actions/setup-python@v6
-        with:
-          python-version: "3.10"
       - name: "Install poetry & tox"
         run: |
           pipx install poetry
           pipx install tox
+      - name: "Start services"
+        run: docker compose -f compose/postgresql-${{ matrix.postgres.version }}.yaml up --wait
       - name: "Run tests"
         run: tox run -e integration
+      - name: "Stop services"
+        run: docker compose -f compose/postgresql-${{ matrix.postgres.version }}.yaml down
       - name: "Upload Coverage to Codecov"
         uses: codecov/codecov-action@v5
