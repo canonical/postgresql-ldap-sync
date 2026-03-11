@@ -89,8 +89,8 @@ export POSTGRES_DATABASE="..."
 export POSTGRES_USERNAME="..."
 export POSTGRES_PASSWORD="..."
 
-podman-compose -f compose.yaml up --detach && tox -e integration
-podman-compose -f compose.yaml down
+sudo --preserve-env docker compose -f compose/postgresql-16.yaml up --wait && tox -e integration
+sudo --preserve-env docker compose -f compose/postgresql-16.yaml down
 ```
 
 ### Release
