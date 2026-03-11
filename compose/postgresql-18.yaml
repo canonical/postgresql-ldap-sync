@@ -1,4 +1,4 @@
-name: "pg-ldap-sync"
+name: "postgresql-ldap-sync"
 
 services:
 
@@ -7,10 +7,10 @@ services:
     ports:
       - "3893:3893"
     volumes:
-      - ./tests/_configs/glauth.cfg:/app/config/config.cfg
+      - ../tests/_configs/glauth.cfg:/app/config/config.cfg
 
   postgres:
-    image: docker.io/postgres:16-alpine
+    image: docker.io/postgres:18-alpine
     ports:
       - "5432:5432"
     environment:
