@@ -59,7 +59,7 @@ jobs:
       - name: "Run tests"
         run: tox run -e unit
       - name: "Upload Coverage to Codecov"
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
 
   test-integration:
     name: "Run integration tests"
@@ -101,4 +101,4 @@ jobs:
       - name: "Stop services"
         run: docker compose -f compose/postgresql-${{ matrix.postgres.version }}.yaml down
       - name: "Upload Coverage to Codecov"
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
