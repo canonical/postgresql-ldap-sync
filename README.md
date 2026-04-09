@@ -111,8 +111,6 @@ This project is a Python port of the popular [pg-ldap-sync][github-pg-ldap-sync]
 [apache-license-link]: https://github.com/canonical/postgresql-ldap-sync/blob/main/LICENSE
 [ci-status-badge]: https://github.com/canonical/postgresql-ldap-sync/actions/workflows/ci.yaml/badge.svg?branch=main
 [ci-status-link]: https://github.com/canonical/postgresql-ldap-sync/actions/workflows/ci.yaml?query=branch%3Amain
-[cov-status-badge]: https://codecov.io/gh/canonical/postgresql-ldap-sync/branch/main/graph/badge.svg
-[cov-status-link]: https://codecov.io/gh/canonical/postgresql-ldap-sync
 
 [docs-pytest]: https://docs.pytest.org/en/latest/#
 [docs-ruff]: https://docs.astral.sh/ruff/

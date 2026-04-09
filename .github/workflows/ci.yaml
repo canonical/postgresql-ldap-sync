@@ -15,27 +15,32 @@ on:
       - main
 
 jobs:
+  lint-workflows:
+    name: Lint .github/workflows/
+    uses: canonical/data-platform-workflows/.github/workflows/lint_workflows.yaml@v48.0.4
+    permissions:
+      contents: read
+
   lint:
     name: "Lint"
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout"
         uses: actions/checkout@v6
+        with:
+          persist-credentials: false
       - name: "Install binaries"
         run: |
           sudo apt update
           sudo apt install libldap2-dev
           sudo apt install libsasl2-dev
-      - name: "Set up Python"
-        uses: actions/setup-python@v6
-        with:
-          python-version: "3.10"
       - name: "Install poetry & tox"
         run: |
           pipx install poetry
           pipx install tox
       - name: "Run linters"
         run: tox run -e lint
+    permissions: {}
 
   test-unit:
     name: "Run unit tests"
@@ -43,26 +48,26 @@ jobs:
     steps:
       - name: "Checkout"
         uses: actions/checkout@v6
+        with:
+          persist-credentials: false
       - name: "Install binaries"
         run: |
           sudo apt update
           sudo apt install libldap2-dev
           sudo apt install libsasl2-dev
-      - name: "Set up Python"
-        uses: actions/setup-python@v6
-        with:
-          python-version: "3.10"
       - name: "Install poetry & tox"
         run: |
           pipx install poetry
           pipx install tox
       - name: "Run tests"
         run: tox run -e unit
-      - name: "Upload Coverage to Codecov"
-        uses: codecov/codecov-action@v6
+    permissions: {}
 
   test-integration:
     name: "Run integration tests"
+    needs:
+      - lint-workflows
+      - lint
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -79,12 +84,8 @@ jobs:
     steps:
       - name: "Checkout"
         uses: actions/checkout@v6
-      - name: "Set up Compose"
-        uses: docker/setup-compose-action@v2
-      - name: "Set up Python"
-        uses: actions/setup-python@v6
         with:
-          python-version: "3.10"
+          persist-credentials: false
       - name: "Install binaries"
         run: |
           sudo apt update
@@ -100,5 +101,4 @@ jobs:
         run: tox run -e integration
       - name: "Stop services"
         run: docker compose -f compose/postgresql-${{ matrix.postgres.version }}.yaml down
-      - name: "Upload Coverage to Codecov"
-        uses: codecov/codecov-action@v6
+    permissions: {}

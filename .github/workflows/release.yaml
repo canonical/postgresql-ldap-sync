@@ -15,6 +15,7 @@ jobs:
       - name: "Checkout"
         uses: actions/checkout@v6
         with:
+          persist-credentials: false
           fetch-depth: 0
       - name: "Install poetry"
         run: pipx install poetry
@@ -34,6 +35,7 @@ jobs:
         with:
           name: distfiles
           path: dist/
+    permissions: {}
 
   upload-github:
     name: "Publish to GitHub"
@@ -42,6 +44,8 @@ jobs:
     steps:
       - name: "Checkout"
         uses: actions/checkout@v6
+        with:
+          persist-credentials: false
       - name: "Download all the dists"
         uses: actions/download-artifact@v8
         with:
@@ -49,12 +53,14 @@ jobs:
           path: dist/
       - name: "Create GitHub release"
         run: |
-          git tag "${{ needs.build.outputs.VERSION }}"
-          git push origin "${{ needs.build.outputs.VERSION }}"
-          gh release create "${{ needs.build.outputs.VERSION }}" --generate-notes --title "${{ needs.build.outputs.VERSION }}"
-          gh release upload "${{ needs.build.outputs.VERSION }}" dist/*.{tar.gz,whl}
+          git tag "${VAR_VERSION}"
+          git push origin "${VAR_VERSION}"
+          gh release create "${VAR_VERSION}" --generate-notes --title "${VAR_VERSION}"
+          gh release upload "${VAR_VERSION}" dist/*.{tar.gz,whl}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VAR_VERSION: ${{ needs.build.outputs.VERSION }}
+    permissions: {}
 
   upload-pypi:
     name: "Publish to PyPI"
