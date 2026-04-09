@@ -1,7 +1,6 @@
 # PostgreSQL-LDAP Sync
 
 [![CI/CD Status][ci-status-badge]][ci-status-link]
-[![Coverage Status][cov-status-badge]][cov-status-link]
 [![Apache license][apache-license-badge]][apache-license-link]
 
 LDAP is often used for a centralized user and role management in an enterprise environment.
