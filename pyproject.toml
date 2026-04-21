@@ -16,7 +16,7 @@ maintainers = [
     { name = "Canonical Data Platform", email = "data-platform@lists.launchpad.net" },
 ]
 dependencies = [
-    "psycopg2 >=2.9.11",
+    "psycopg2 >=2.9.12",
     "python-ldap >= 3.4.5",
 ]
 
