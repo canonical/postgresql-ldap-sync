@@ -17,7 +17,7 @@ maintainers = [
 ]
 dependencies = [
     "psycopg2 >=2.9.12",
-    "python-ldap >= 3.4.5",
+    "python-ldap >=3.4.6",
 ]
 
 [project.optional-dependencies]
@@ -29,7 +29,7 @@ lint = [
     "ruff ~=0.15",
 ]
 test = [
-    "coverage ~=7.13",
+    "coverage ~=7.14",
     "pytest ~=9.0",
 ]
 
