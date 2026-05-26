@@ -301,13 +301,13 @@ dev = ["argcomplete", "attrs (>=19.2)", "hypothesis (>=3.56)", "mock", "requests
 
 [[package]]
 name = "python-ldap"
-version = "3.4.6"
+version = "3.4.7"
 description = "Python modules for implementing LDAP clients"
 optional = false
 python-versions = ">=3.6"
 groups = ["main"]
 files = [
-    {file = "python_ldap-3.4.6.tar.gz", hash = "sha256:83d6b65c7cbe627d81e556d0d03f3f450e3ac35ba9c1b6011f0097ac92effeb1"},
+    {file = "python_ldap-3.4.7.tar.gz", hash = "sha256:bacd9fb680d20263d8570ade1cf234d90d281149a8beb4f079dd8f33f7613dc8"},
 ]
 
 [package.dependencies]
@@ -422,4 +422,4 @@ test = ["coverage", "pytest"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10"
-content-hash = "cd3837fe003d9d9a2e0ffeef17153e0bac17ca827642b86215ecd2d55f241f3d"
+content-hash = "5fd3a681c9599900f86b0ca8f920dbd81337a51716ca99dacfd804156ca1b3ef"
