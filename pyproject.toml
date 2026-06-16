@@ -30,7 +30,7 @@ lint = [
 ]
 test = [
     "coverage ~=7.14",
-    "pytest ~=9.0",
+    "pytest ~=9.1",
 ]
 
 [project.urls]
