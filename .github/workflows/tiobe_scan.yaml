@@ -20,6 +20,12 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: "Install binaries"
+        run: |
+          sudo apt update
+          sudo apt install libldap2-dev
+          sudo apt install libsasl2-dev
+
       - name: Create and activate virtual environment
         run: |
           python3 -m venv .venv
