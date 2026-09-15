@@ -20,6 +20,7 @@ jobs:
     uses: canonical/data-platform-workflows/.github/workflows/lint_workflows.yaml@v53.0.0
     permissions:
       contents: read
+    cache-mode: none
 
   lint:
     name: "Lint"
@@ -41,6 +42,7 @@ jobs:
       - name: "Run linters"
         run: tox run -e lint
     permissions: {}
+    cache-mode: none
 
   test-unit:
     name: "Run unit tests"
@@ -62,6 +64,7 @@ jobs:
       - name: "Run tests"
         run: tox run -e unit
     permissions: {}
+    cache-mode: none
 
   test-integration:
     name: "Run integration tests"
@@ -102,3 +105,4 @@ jobs:
       - name: "Stop services"
         run: docker compose -f compose/postgresql-${{ matrix.postgres.version }}.yaml down
     permissions: {}
+    cache-mode: none
