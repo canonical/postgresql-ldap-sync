@@ -435,4 +435,4 @@ test = ["coverage", "pytest"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10"
-content-hash = "df0d282c6e7afbd42af929acc9df8ac3a647a364f329e909cccc29bed7c4dd35"
+content-hash = "89e03503664fa284c983ef24b1afdf67e0b997d92e55b96910ad69fca1db6614"
